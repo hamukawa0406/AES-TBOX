@@ -144,28 +144,18 @@ void SubBytes(LPBYTE lpbState){
 
 // MixColumn
 void MixColumn(LPBYTE lpbState){
-	BYTE state[16] = {0};
-	for(int i = 0; i < 16; i++){
-		state[i] = lpbState[i];
+	BYTE state[4] = {0};
+	for(int i = 0; i < 4; i++){
+		state[0] = lpbState[0+i*4];
+		state[1] = lpbState[1+i*4];
+		state[2] = lpbState[2+i*4];
+		state[3] = lpbState[3+i*4];
+		for(int j = 0; j < 4; j++){
+			lpbState[0+i*4] = GFMult(state[0], 02) ^ GFMult(state[1], 03) ^ state[2] ^ state[3];
+			lpbState[1+i*4] = state[0] ^ GFMult(state[1], 02) ^ GFMult(state[2], 03) ^ state[3];
+			lpbState[2+i*4] = state[0] ^ state[1] ^ GFMult(state[2], 02) ^ GFMult(state[3], 03);
+			lpbState[3+i*4] = GFMult(state[0], 03) ^ state[1] ^ state[2] ^ GFMult(state[3], 02);
+		}
 	}
-	lpbState[0] = GFMult(state[0], 02) ^ GFMult(state[1], 03) ^ state[2] ^ state[3];
-	lpbState[4] = GFMult(state[4], 02) ^ GFMult(state[5], 03) ^ state[6] ^ state[7];
-	lpbState[8] = GFMult(state[8], 02) ^ GFMult(state[9], 03) ^ state[10] ^ state[11];
-	lpbState[12] = GFMult(state[12], 02) ^ GFMult(state[13], 03) ^ state[14] ^ state[15];
-
-	lpbState[1] = state[0] ^ GFMult(state[1], 02) ^ GFMult(state[2], 03) ^ state[3];
-	lpbState[5] = state[4] ^ GFMult(state[5], 02) ^ GFMult(state[6], 03) ^ state[7];
-	lpbState[9] = state[8] ^ GFMult(state[9], 02) ^ GFMult(state[10], 03) ^ state[11];
-	lpbState[13] = state[12] ^ GFMult(state[13], 02) ^ GFMult(state[14], 03) ^ state[15];
-
-	lpbState[2] = state[0] ^ state[1] ^ GFMult(state[2], 02) ^ GFMult(state[3], 03);
-	lpbState[6] = state[4] ^ state[5] ^ GFMult(state[6], 02) ^ GFMult(state[7], 03);
-	lpbState[10] = state[8] ^ state[9] ^ GFMult(state[10], 02) ^ GFMult(state[11], 03);
-	lpbState[14] = state[12] ^ state[13] ^ GFMult(state[14], 02) ^ GFMult(state[15], 03);
-
-	lpbState[3] = GFMult(state[0], 03) ^ state[1] ^ state[2] ^ GFMult(state[3], 02);
-	lpbState[7] = GFMult(state[4], 03) ^ state[5] ^ state[6] ^ GFMult(state[7], 02);
-	lpbState[11] = GFMult(state[8], 03) ^ state[9] ^ state[10] ^ GFMult(state[11], 02);
-	lpbState[15] = GFMult(state[12], 03) ^ state[13] ^ state[14] ^ GFMult(state[15], 02);
 }
 
