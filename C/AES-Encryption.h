@@ -3,7 +3,7 @@
 #pragma once
 
 // 1..9 main rounds with ShiftRow, SBox and MixColumn through TBoxes.
-void AesEncyption(LPBYTE lpbState, LPCBYTE lpbKey);
+void AesEncyption(LPBYTE lpbState, LPCBYTE lpbKey, bool use_tbox);
 
 // compute the four TBoxes
 void ComputeTBoxes();
@@ -22,3 +22,9 @@ void KeyAdd(LPBYTE lpbState, LPCBYTE lpbKey, int iRount);
 
 // TBox lookup
 void TBoxLUP(LPBYTE lpbState);
+
+// Sbox lookup
+void SubBytes(LPBYTE lpbState);
+
+// MixColumn
+void MixColumn(LPBYTE lpbState);

@@ -26,17 +26,25 @@ DWORD TBox3[256] = { 0 };
 
 // Whole AES Encrpyption with intitial key add
 // 1..9 main rounds with ShiftRow, SBox and MixColumn through TBoxes and the last round without TBox
-void AesEncyption(LPBYTE lpbState, LPCBYTE lpbKey){
+void AesEncyption(LPBYTE lpbState, LPCBYTE lpbKey, bool use_tbox){
 	for(int i = 0; i < 16; i++){ // Initial Round
 		lpbState[i] ^= lpbKey[i]; 
 	}
-	for(int i = 1; i <= 9; i++){
-		TBoxLUP(lpbState);
-		KeyAdd(lpbState, lpbKey, i);
+	if(use_tbox)
+		for(int i = 1; i <= 9; i++){
+			TBoxLUP(lpbState);
+			KeyAdd(lpbState, lpbKey, i);
+		}
+	else{
+		for(int i = 1; i <= 9; i++){
+            SubBytes(lpbState);
+	        ShiftRow(lpbState);
+			MixColumn(lpbState);
+			KeyAdd(lpbState, lpbKey, i);
+		}
 	}
-	for(int i = 0; i<16; i++){ // SubBytes
-		lpbState[i] = Sbox[lpbState[i]];
-	}
+
+    SubBytes(lpbState);
 	ShiftRow(lpbState);
 	KeyAdd(lpbState, lpbKey, 10);
 }
@@ -125,3 +133,15 @@ void TBoxLUP(LPBYTE lpbState){
 	lpbState[14] = (e3 >> 8) & 0xff;
 	lpbState[15] = e3 & 0xff;
 }
+
+// Sbox lookup
+void SubBytes(LPBYTE lpbState){
+	for(int i = 0; i<16; i++){ // SubBytes
+		lpbState[i] = Sbox[lpbState[i]];
+	}
+}
+
+// MixColumn
+void MixColumn(LPBYTE lpbState){
+}
+
