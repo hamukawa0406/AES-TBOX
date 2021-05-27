@@ -1,4 +1,7 @@
 #include <cstdio>
+#include <unistd.h>
+#include <string.h>
+
 #include "AES-KeyExp.h"
 #include "AES-Encryption.h"
 
@@ -35,7 +38,32 @@ int main(int argc, char* argv[])
 
     BYTE bExpKey[176];
     bool use_tbox = true;
+	int opt;
 
+	while ((opt = getopt(argc, argv, "t:")) != -1)
+	{
+		printf("optind[%d] optarg[%s] ", optind, optarg);
+
+		switch (opt)
+		{
+		case 't':
+            if(strncmp(optarg, "sbox", 4) == 0){
+                printf("using sbox\n");
+                use_tbox = false;
+            }
+            else if(strncmp(optarg, "tbox", 4) == 0){
+                printf("using Tbox\n");
+                use_tbox = true;
+            }
+            else{
+                printf("please tbox or sbox\n");
+            }
+            break;
+        default:
+			printf("[%c] オプション指定\n", opt);
+			break;
+		 }
+	}
     //Print Cleatext
     printf("Cleartext\n");
     for(int i = 1; i<=16; i++){
