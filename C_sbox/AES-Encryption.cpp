@@ -20,10 +20,7 @@ BYTE Sbox[256] = {
 0xe1, 0xf8, 0x98, 0x11, 0x69, 0xd9, 0x8e, 0x94, 0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf, //E
 0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16 }; //F
 
-DWORD TBox0[256] = { 0 };
-DWORD TBox1[256] = { 0 };
-DWORD TBox2[256] = { 0 };
-DWORD TBox3[256] = { 0 };
+
 
 // Whole AES Encrpyption with intitial key add
 // 1..9 main rounds with ShiftRow, SBox and MixColumn through TBoxes and the last round without TBox
@@ -32,7 +29,9 @@ void AesEncyption(LPBYTE lpbState, LPCBYTE lpbKey){
 		lpbState[i] ^= lpbKey[i]; 
 	}
 	for(int i = 1; i <= 9; i++){
-		TBoxLUP(lpbState);
+		SubBytes(lpbState);
+		ShiftRow(lpbState);
+		MixColumn(lpbState);
 		KeyAdd(lpbState, lpbKey, i);
 	}
 
@@ -41,15 +40,7 @@ void AesEncyption(LPBYTE lpbState, LPCBYTE lpbKey){
 	KeyAdd(lpbState, lpbKey, 10);
 }
 
-// compute the four TBoxes
-void ComputeTBoxes(){
-	for(int i = 0; i < 256; i++){
-		TBox0[i] = ConCat( GFMult(Sbox[i], 02), Sbox[i], Sbox[i], GFMult(Sbox[i], 03) );
-		TBox1[i] = ConCat( GFMult(Sbox[i], 03), GFMult(Sbox[i], 02), Sbox[i], Sbox[i] );
-		TBox2[i] = ConCat( Sbox[i], GFMult(Sbox[i], 03), GFMult(Sbox[i], 02), Sbox[i] );
-		TBox3[i] = ConCat( Sbox[i], Sbox[i], GFMult(Sbox[i], 03), GFMult(Sbox[i], 02) );
-	}
-}
+
 
 // concatenate four byte to a dword
 DWORD ConCat(BYTE b0, BYTE b1, BYTE b2, BYTE b3){
@@ -98,38 +89,27 @@ void KeyAdd(LPBYTE lpbState, LPCBYTE lpbKey, int iRount){
 	}
 }
 
-// TBox lookup
-void TBoxLUP(LPBYTE lpbState){
-	DWORD e0 = TBox0[lpbState[0]] ^ TBox1[lpbState[5]] ^ TBox2[lpbState[10]] ^ TBox3[lpbState[15]];
-	DWORD e1 = TBox0[lpbState[4]] ^ TBox1[lpbState[9]] ^ TBox2[lpbState[14]] ^ TBox3[lpbState[3]];
-	DWORD e2 = TBox0[lpbState[8]] ^ TBox1[lpbState[13]] ^ TBox2[lpbState[2]] ^ TBox3[lpbState[7]];
-	DWORD e3 = TBox0[lpbState[12]] ^ TBox1[lpbState[1]] ^ TBox2[lpbState[6]] ^ TBox3[lpbState[11]];
-	
-	lpbState[0] = (e0 >> 24) & 0xff;
-	lpbState[1] = (e0 >> 16) & 0xff;
-	lpbState[2] = (e0 >> 8) & 0xff;
-	lpbState[3] = e0 & 0xff;
-
-	lpbState[4] = (e1 >> 24) & 0xff;
-	lpbState[5] = (e1 >> 16) & 0xff;
-	lpbState[6] = (e1 >> 8) & 0xff;
-	lpbState[7] = e1 & 0xff;
-
-	lpbState[8] = (e2 >> 24) & 0xff;
-	lpbState[9] = (e2 >> 16) & 0xff;
-	lpbState[10] = (e2 >> 8) & 0xff;
-	lpbState[11] = e2 & 0xff;
-
-	lpbState[12] = (e3 >> 24) & 0xff;
-	lpbState[13] = (e3 >> 16) & 0xff;
-	lpbState[14] = (e3 >> 8) & 0xff;
-	lpbState[15] = e3 & 0xff;
-}
-
 // Sbox lookup
 void SubBytes(LPBYTE lpbState){
 	for(int i = 0; i<16; i++){ // SubBytes
 		lpbState[i] = Sbox[lpbState[i]];
+	}
+}
+
+// MixColumn
+void MixColumn(LPBYTE lpbState){
+	BYTE state[4] = {0};
+	for(int i = 0; i < 4; i++){
+		state[0] = lpbState[0+i*4];
+		state[1] = lpbState[1+i*4];
+		state[2] = lpbState[2+i*4];
+		state[3] = lpbState[3+i*4];
+		for(int j = 0; j < 4; j++){
+			lpbState[0+i*4] = GFMult(state[0], 02) ^ GFMult(state[1], 03) ^ state[2] ^ state[3];
+			lpbState[1+i*4] = state[0] ^ GFMult(state[1], 02) ^ GFMult(state[2], 03) ^ state[3];
+			lpbState[2+i*4] = state[0] ^ state[1] ^ GFMult(state[2], 02) ^ GFMult(state[3], 03);
+			lpbState[3+i*4] = GFMult(state[0], 03) ^ state[1] ^ state[2] ^ GFMult(state[3], 02);
+		}
 	}
 }
 
