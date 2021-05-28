@@ -13,7 +13,7 @@ cargo run
 
 ## C Implementation
 
-./C/ ------- T-tableでの実装
+./C -------- T-tableでの実装
 
 ./C_sbox --- S-boxでの実装
 
